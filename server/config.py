@@ -5,6 +5,7 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from sqlalchemy import MetaData
 from flask_cors import CORS
+from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
@@ -19,6 +20,8 @@ db_name = os.getenv('DB_DATABASE')
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1) 
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
 # Database URL
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'

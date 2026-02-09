@@ -1,5 +1,7 @@
-from app import db
 from datetime import datetime
+from config import db
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -10,7 +12,7 @@ class User(db.Model):
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-    role = db.Column(db.String(50), default='tenant')
+    role = db.Column(db.String(50), default='landlord')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
@@ -19,6 +21,25 @@ class User(db.Model):
     properties = db.relationship('Property', backref='landlord', lazy=True)
     tenant_profile = db.relationship('Tenant', backref='user', uselist=False, lazy=True)
 
+    def set_password(self,password):
+        self.password_hash = Bcrypt().generate_password_hash(password).decode('utf-8')
+
+    def check_password(self,password):
+        return Bcrypt().check_password_hash(self.password_hash,password)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'phone': self.phone,
+            'role': self.role,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'is_active': self.is_active
+        }
+    
 class Property(db.Model):
     __tablename__ = 'properties'
     
