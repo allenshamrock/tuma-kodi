@@ -119,10 +119,33 @@ class Tenant(db.Model):
     status = db.Column(db.String(50), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+
     
     # Relationships
     payments = db.relationship('Payment', backref='tenant', lazy=True)
     invoices = db.relationship('Invoice', backref='tenant', lazy=True)
+
+    def to_dict(self):  
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'apartment_id': self.apartment_id,
+            'lease_start_date': self.lease_start_date.isoformat(),
+            'lease_end_date': self.lease_end_date.isoformat() if self.lease_end_date else None,
+            'monthly_rent': str(self.monthly_rent),
+            'security_deposit_paid': str(self.security_deposit_paid),
+            'emergency_contact': self.emergency_contact,
+            'id_number': self.id_number,
+            'status': self.status,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'name': self.name,
+            'email': self.email,
+            'phone': self.phone
+        }
 
 class Payment(db.Model):
     __tablename__ = 'payments'

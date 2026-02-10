@@ -141,21 +141,32 @@ def create_unit(property_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-
 #Get all units for a property
-@properties_bp.route('/properties/<int:property_id>/units',methods = ['GET'])
+@properties_bp.route('/properties/<int:property_id>/units', methods=['GET'])
 @jwt_required()
 def get_units(property_id):
     try:
         landlord_id = get_jwt_identity()  # Get landlord ID from JWT token
         property = Property.query.filter_by(id=property_id, landlord_id=landlord_id).first()
         if not property:
-            return jsonify({'error':'Property not found'}), 404
-        
-        units = [apartment.to_dict() for apartment in property.apartments]
+            return jsonify({'error': 'Property not found'}), 404
+
+        units = []
+        for unit in property.apartments:
+            unit_dict = unit.to_dict()
+            if unit.tenant:
+                unit_dict['tenant'] = unit.tenant.to_dict()
+            else:
+                unit_dict['tenant'] = None  
+            units.append(unit_dict)
+
+       
         return jsonify({
             'property': property.to_dict(),
-            'units': units}), 200
+            'units': units
+        }), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
