@@ -56,6 +56,19 @@ class Property(db.Model):
     # Relationships
     apartments = db.relationship('Apartment', backref='property', lazy=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'landlord_id': self.landlord_id,
+            'name': self.name,
+            'address': self.address,
+            'city': self.city,
+            'total_units': self.total_units,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'status': self.status
+        }
+
 class Apartment(db.Model):
     __tablename__ = 'apartments'
     
@@ -75,6 +88,21 @@ class Apartment(db.Model):
     tenant = db.relationship('Tenant', backref='apartment', uselist=False, lazy=True)
     payments = db.relationship('Payment', backref='apartment', lazy=True)
     invoices = db.relationship('Invoice', backref='apartment', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'property_id': self.property_id,
+            'apartment_number': self.apartment_number,
+            'apartment_type': self.apartment_type,
+            'rent_amount': str(self.rent_amount),
+            'deposit_amount': str(self.deposit_amount),
+            'size_sqft': self.size_sqft,
+            'features': self.features,
+            'status': self.status,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
 
 class Tenant(db.Model):
     __tablename__ = 'tenants'
