@@ -86,7 +86,7 @@ class Apartment(db.Model):
     
     # Relationships
     tenant = db.relationship('Tenant', backref='apartment', uselist=False, lazy=True)
-    payments = db.relationship('Payment', backref='apartment', lazy=True)
+    payments = db.relationship('Payment', back_populates="apartment", cascade="all, delete-orphan")
     invoices = db.relationship('Invoice', backref='apartment', lazy=True)
 
     def to_dict(self):
@@ -125,7 +125,7 @@ class Tenant(db.Model):
 
     
     # Relationships
-    payments = db.relationship('Payment', backref='tenant', lazy=True)
+    payments = db.relationship('Payment', back_populates="tenant", cascade="all, delete-orphan")
     invoices = db.relationship('Invoice', backref='tenant', lazy=True)
 
     def to_dict(self):  
@@ -146,23 +146,44 @@ class Tenant(db.Model):
             'email': self.email,
             'phone': self.phone
         }
-
 class Payment(db.Model):
     __tablename__ = 'payments'
-    
     id = db.Column(db.Integer, primary_key=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
     apartment_id = db.Column(db.Integer, db.ForeignKey('apartments.id'))
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    tenant_name =  db.Column(db.String(100), nullable=False)
+    apartment_number = db.Column(db.String(10), nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
-    payment_method = db.Column(db.String(50))
-    mpesa_receipt_number = db.Column(db.String(100))
-    transaction_id = db.Column(db.String(255))
-    payment_date = db.Column(db.Date, nullable=False)
-    month_paid_for = db.Column(db.String(7))
+    mpesa_receipt_number = db.Column(db.String(100), unique=True)
+    payment_method = db.Column(db.String(50), default='mpesa')
+    month_paid_for = db.Column(db.String(7),)
     status = db.Column(db.String(50), default='pending')
-    late_fee = db.Column(db.Numeric(10, 2), default=0)
+    phone_number = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    #Relationships
+    tenant = db.relationship('Tenant',back_populates="payments")
+    apartment = db.relationship('Apartment', back_populates="payments")
+    invoice = db.relationship('Invoice',back_populates="payment", uselist=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'tenant_id': self.tenant_id,
+            'apartment_id': self.apartment_id,
+            'payment_date': self.payment_date.isoformat(),
+            'tenant_name': self.tenant_name,
+            'apartment_number': self.apartment_number,
+            'amount': str(self.amount),
+            'mpesa_receipt_number': self.mpesa_receipt_number,
+            'payment_method': self.payment_method,
+            'month_paid_for': self.month_paid_for,
+            'status': self.status,
+            'phone_number': self.phone_number,
+        }
+
 
 class Invoice(db.Model):
     __tablename__ = 'invoices'
@@ -183,4 +204,4 @@ class Invoice(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationship
-    payment = db.relationship('Payment', backref='invoice', uselist=False, lazy=True)
+    payment = db.relationship('Payment', back_populates="invoice")

@@ -5,12 +5,14 @@ from routes.auth import auth_bp
 from routes.properties import properties_bp
 from routes.apartments import apartments_bp
 from routes.tenant import tenant_bp
+from routes.payment import payments_bp
 
 # Register blueprint
 app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(properties_bp, url_prefix='/api')
 app.register_blueprint(apartments_bp, url_prefix='/api')
 app.register_blueprint(tenant_bp, url_prefix='/api')
+app.register_blueprint(payments_bp, url_prefix='/api/payments')
 
 @app.route('/')
 def home():
