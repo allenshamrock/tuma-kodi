@@ -68,45 +68,45 @@ class SMSClient:
                 'error':str(e)
             }
         
-    def send_payment_remainder(self,tenant_name,phone_number,amount,property_name,tenant_id,due_date):
+    def send_payment_remainder(self,tenant_name,phone_number,amount,house_name,tenant_id,due_date):
             """
             Send payment remainder to tenant
             """
             message = (
-            f"Dear {tenant_name}, your rent of KES {amount:,.0f} for {property_name}"
+            f"Dear {tenant_name}, your rent of KES {amount:,.0f} for {house_name}"
             f"is due on {due_date}. Please pay via M-Pesa Paybill 174379. "
-            f"Account: {property_name}. Ref: {tenant_id}"
+            f"Account: {house_name}. Ref: {tenant_id}"
             )
             return self.send_sms(phone_number,message)
     
-    def send_payment_confirmation(self,tenant_name,amount,phone_number,property_name,mpesa_recipient_number):
+    def send_payment_confirmation(self,tenant_name,amount,phone_number,house_name,mpesa_ref):
         """
         Send payment confirmation to tenant
         """
         message = (
             f"Dear {tenant_name}, we have received your payment of KES {amount:,.0f} "
-            f"for {property_name}. M-Pesa Ref: {mpesa_ref}. Thank you!"            
+            f"for {house_name}. M-Pesa Ref: {mpesa_ref}. Thank you!"            
         )
         return self.send_sms(phone_number,message)
     
-    def send_overdue_notice(self,tenant_name,phone_number,amount,property_name,days_overdue):
+    def send_overdue_notice(self,tenant_name,phone_number,amount,house_name,days_overdue):
         """
         Send overdue notice to tenant
         """
         message = (
-             f"Dear {tenant_name}, your rent of KES {amount:,.0f} for {property_name} "
+             f"Dear {tenant_name}, your rent of KES {amount:,.0f} for {house_name} "
             f"is {days_overdue} days overdue. Please pay immediately via M-Pesa "
             f"Paybill 174379 to avoid penalties."           
         )
 
         return self.send_sms(phone_number,message)
     
-    def send_partial_payment_notice(self,tenant_name,phone_number,amount_paid,amount_due,balance,property_name):
+    def send_partial_payment_notice(self,tenant_name,phone_number,amount_paid,amount_due,balance,house_name):
         """
         Send Partial payment notice to tenant
         """
         message = (
-            f"Dear {tenant_name}, we received KES {amount_paid:,.0f} for {property_name}. "
+            f"Dear {tenant_name}, we received KES {amount_paid:,.0f} for {house_name}. "
             f"Your balance is KES {balance:,.0f} out of KES {amount_due:,.0f}. "
             f"Please pay the remaining amount soon."            
         )
