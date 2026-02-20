@@ -5,6 +5,7 @@ from config import db
 from datetime import datetime
 from mpesa_client import mpesa_client
 import logging
+from .notifications import send_payment_confirmation_sms,send_partial_payment_sms
 
 payments_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
 
@@ -133,6 +134,15 @@ def mpesa_callback():
         db.session.commit()
 
         logger.info(f"Payment recorded: {mpesa_receipt} - {amount}")
+
+        #Auto send confirmation SMS
+        if status == 'completed':
+            #Send payment confirmation
+            send_payment_confirmation_sms(payment)
+        elif status == 'partial':
+            #Send partial payment notice
+            if tenant:
+                send_partial_payment_sms(payment,tenant,apartment)
 
         return jsonify({
             'ResultCode': 0,

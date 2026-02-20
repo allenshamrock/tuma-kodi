@@ -1,4 +1,4 @@
-from Flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from config import db
 from models import Invoice,Tenant,User,Apartment,Property,Payment
@@ -9,7 +9,7 @@ import random
 import string
 
 
-invoices_bp = Blueprint('invoices',__name__)
+invoices_bp = Blueprint('invoices',__name__,url_prefix = '/api/invoices')
 
 #Generate invoice no helper function
 def generate_invoice_number():
@@ -211,6 +211,7 @@ def get_invoice(invoice_id):
         'payment': payment
     })  
 
+#Update an invoice (only if not paid and only by landlord)
 @invoices_bp.route('/<int:invoice_id>', methods=['PUT'])
 @jwt_required()
 def update_invoice(invoice_id):
