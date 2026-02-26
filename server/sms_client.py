@@ -13,7 +13,7 @@ class SMSClient:
     def __init__(self):
         self.username = os.getenv('AFRICASTALKING_USERNAME')
         self.api_key = os.getenv('AFRICASTALKING_API_KEY')
-        self.sender_id = os.getenv('AFRICASTALKING_SENDER_ID')
+        self.sender_id = os.getenv('AFRICASTALKING_SENDER_ID') or None
         africastalking.initialize(self.username, self.api_key)
         self.sms = africastalking.SMS
 
@@ -26,8 +26,8 @@ class SMSClient:
             #Send the SMS
             response = self.sms.send(
                 message = message,
-                recipient = [phone_number],
-                sender_id = self.sender_id
+                recipients = [phone_number],
+                # sender_id = self.sender_id
             )
             logger.info(f"SMS sent to {phone_number}:{response}")
             return {
@@ -54,7 +54,7 @@ class SMSClient:
             response =self.sms.send(
                 message = message,
                 recipients = formatted_recipients,
-                sender_id = self.sender_id
+                # sender_id = self.sender_id
             )
             logger.info(f"Bulk SMS sent to {len(formatted_recipients)} recipients")
             return{
@@ -68,13 +68,13 @@ class SMSClient:
                 'error':str(e)
             }
         
-    def send_payment_remainder(self,tenant_name,phone_number,amount,house_name,tenant_id,due_date):
+    def send_payment_reminder(self,tenant_name,phone_number,amount,house_name,tenant_id,due_date):
             """
             Send payment remainder to tenant
             """
             message = (
             f"Dear {tenant_name}, your rent of KES {amount:,.0f} for {house_name}"
-            f"is due on {due_date}. Please pay via M-Pesa Paybill 174379. "
+            f" is due on {due_date}. Please pay via M-Pesa Paybill 174379. "
             f"Account: {house_name}. Ref: {tenant_id}"
             )
             return self.send_sms(phone_number,message)
@@ -125,14 +125,14 @@ class SMSClient:
         phone_number = phone_number.replace(' ', '').replace('-', '').replace('+', '')
 
         #COnvert to +254 format
-        if phone_number.startWith('0'):
+        if phone_number.startswith('0'):
             phone_number = f'+254{phone_number[1:]}'
-        elif phone_number.startWith('254'):
+        elif phone_number.startswith('254'):
             phone_number = f'+{phone_number}'
-        elif phone_number.startWith('7') or phone_number.startWIth('1'):
+        elif phone_number.startswith('7') or phone_number.startswith('1'):
             phone_number = f'+254{phone_number}'
         else:
-            if not phone_number.startWith('+'):
+            if not phone_number.startswith('+'):
                 phone_number = f'+{phone_number}'
         return phone_number
 

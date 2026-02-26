@@ -64,62 +64,96 @@ def send_custom_sms():
         logger.error(f"Custom SMS error:{str(e)}")
         return jsonify({'error':str(e)}),500
     
-@notifications_bp.route('/sms/payment-remainder',methods=['POST'])
+@notifications_bp.route('/sms/payment-reminder', methods=['POST'])  
 @jwt_required()
-def send_payment_remainder():
+def send_payment_reminder():
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
 
         if not user or user.role != 'landlord':
-            return jsonify({'message':'Unauthorized only landlords can send notifications'}),403
+            return jsonify({'message': 'Unauthorized only landlords can send notifications'}), 403
         
         data = request.get_json()
-        tenant_ids = data.get(tenant_ids,[])
-        due_date = data.get(due_date)
+        tenant_ids = data.get("tenant_ids", [])
+        due_date = data.get("due_date")
 
         if not tenant_ids:
-            return jsonify({'message':'At least one tenant ID is required'}),400
+            return jsonify({'message': 'At least one tenant ID is required'}), 400
         
         if not due_date:
-            #Default to 10th of th current month
             today = date.today()
-            due_date = date(today.year,today.month,10).strftime('%Y-%m-%d')
+            due_date = date(today.year, today.month, 10).strftime('%Y-%m-%d')
 
-        tenants = Tenant.query.filter(Tenant.id.in_(tenant_ids)).all()
+        # Get landlord's property IDs
         landlord_property_ids = [property.id for property in user.properties]
+        
+        logger.info(f"Landlord {user.id} has properties: {landlord_property_ids}")
+        logger.info(f"Requested tenant IDs: {tenant_ids}")
+
+        # Get tenants that match requested IDs AND belong to landlord's properties
+        tenants = db.session.query(Tenant).join(
+            Apartment, Tenant.apartment_id == Apartment.id
+        ).filter(
+            Apartment.property_id.in_(landlord_property_ids),
+            Tenant.id.in_(tenant_ids),
+            Tenant.status == 'active'
+        ).all()
+
+        logger.info(f"Found {len(tenants)} matching tenants")
+
+        if not tenants:
+            return jsonify({
+                'message': 'No matching tenants found',
+                'error': 'The specified tenant IDs do not belong to your properties or are not active',
+                'requested_ids': tenant_ids,
+                'your_property_ids': landlord_property_ids
+            }), 404
+
         results = []
 
         for tenant in tenants:
             apartment = Apartment.query.get(tenant.apartment_id)
-            if not apartment or apartment.property_id not in landlord_property_ids:
-                continue
             property_info = Property.query.get(apartment.property_id)
             house_name = f"{property_info.name} - Apt{apartment.apartment_number}"
 
-            result = sms_client.send_payment_remainder(
-                tenant = tenant.name,
-                amount = float(tenant.rent_amount),
-                house_name = house_name,
-                due_date = due_date,
-                phone_number = tenant.phone_number,
-                tenant_id = tenant.id
+            logger.info(f"Sending reminder to {tenant.name} at {tenant.phone}")
 
+            sms_result = sms_client.send_payment_reminder(
+                tenant_name=tenant.name,
+                amount=float(tenant.monthly_rent),
+                house_name=house_name,
+                due_date=due_date,
+                phone_number=tenant.phone,
+                tenant_id=tenant.id
             )
-            result.append({
+
+            logger.info(f"SMS result for {tenant.name}: {sms_result}")
+
+            results.append({
                 'tenant_id': tenant.id,
-                'phone_number': tenant.phone_number,
-                'status':'sent' if result['success'] else 'failed',
-                'error': result.get('error')
+                'tenant_name': tenant.name,
+                'phone': tenant.phone,
+                'status': 'sent' if sms_result.get('success') else 'failed',  
+                'error': sms_result.get('error'),
+                'details': sms_result.get('details')
             })
 
-            return jsonify({
-                'message':'Payment remainders sent',
-                'results':results
-            }),200
+        return jsonify({
+            'message': 'Payment reminders sent',
+            'results': results,
+            'summary': {
+                'total': len(results),
+                'sent': len([r for r in results if r['status'] == 'sent']),
+                'failed': len([r for r in results if r['status'] == 'failed'])
+            }
+        }), 200
+        
     except Exception as e:
-        logger.error(f"Payment remainder error:{str(e)}")
-        return jsonify({'error':str(e)}),500
+        logger.error(f"Payment reminder error: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
 
 @notifications_bp.route('/sms/overdue_notice',methods=['POST'])
 @jwt_required()
@@ -132,7 +166,7 @@ def send_overdue_notice():
             return jsonify({'message':'Unauthorized only landlords can send notifications'}),403
         
         data = request.get_json()
-        tenant_ids = data.get(tenant_ids,[])
+        tenant_ids = data.get("tenant_ids",[])
 
         if not tenant_ids:
             return jsonify({'message':'At least one tenant ID is required'}),400
@@ -172,15 +206,15 @@ def send_overdue_notice():
 
                     result = sms_client.send_overdue_notice(
                         tenant_name = tenant.name,
-                        amount= float(tenant.rent_amount),
+                        amount= float(tenant.monthly_rent),
                         house_name = house_name,
                         days_overdue = days_overdue,
-                        phone_number = tenant.phone_number
+                        phone_number = tenant.phone
                     )
                     results.append({
                         'tenant_id':tenant.id,
-                        'phone_number':tenant.phone_number,
-                        'status':'sent' if result['success'] else 'failed',
+                        'phone_number':tenant.phone,
+                        'status':'sent' if result.get('status') == 'success' else 'failed',
                         'error': result.get('error')
                     })
         return jsonify({

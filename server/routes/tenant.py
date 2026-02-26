@@ -57,6 +57,7 @@ def create_tenant():
 def get_tenants():
     try:
         landlord_id = get_jwt_identity()  # Get landlord ID from JWT token
+        db.session.expire_all()  # Clear session cache to ensure fresh data
         tenants = Tenant.query.join(Apartment).join(Property).filter(Property.landlord_id == landlord_id).all()
         tenants_list = [tenant.to_dict() for tenant in tenants]
         return jsonify({'tenants': tenants_list}), 200
@@ -81,6 +82,7 @@ def update_tenant(tenant_id):
             tenant.status = data['status'].strip()
         
         db.session.commit()
+        db.session.refresh(tenant)
         return jsonify({'message':'Tenant updated successfully'}), 200
     
     except Exception as e:
@@ -123,3 +125,22 @@ def create_lease(tenant_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@tenant_bp.route('/tenants/<int:tenant_id>', methods=['DELETE'])
+@jwt_required()
+def delete_tenant(tenant_id):       
+    try:
+        landlord_id = get_jwt_identity()  # Get landlord ID from JWT token
+
+        #Check if tenant exists and belongs to landlord
+        tenant = Tenant.query.join(Apartment).join(Property).filter(Tenant.id == tenant_id, Property.landlord_id == landlord_id).first()
+        if not tenant:
+            return jsonify({'error':'Tenant not found or does not belong to landlord'}), 404 
+        
+        db.session.delete(tenant)
+        db.session.commit()
+        return jsonify({'message':'Tenant deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
