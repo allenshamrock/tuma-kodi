@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
-from models import User,Tenant,Apartment,Property,Invoice,Payment
+from models import User,Tenant,Apartment,Property,Payment
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from config import db
 from sms_client import sms_client
-from datetime import datetime,timedelta,date
+from datetime import datetime,date
 import logging
 
 notifications_bp = Blueprint('notifications',__name__,url_prefix='/api/notifications')
@@ -88,9 +88,6 @@ def send_payment_reminder():
         # Get landlord's property IDs
         landlord_property_ids = [property.id for property in user.properties]
         
-        logger.info(f"Landlord {user.id} has properties: {landlord_property_ids}")
-        logger.info(f"Requested tenant IDs: {tenant_ids}")
-
         # Get tenants that match requested IDs AND belong to landlord's properties
         tenants = db.session.query(Tenant).join(
             Apartment, Tenant.apartment_id == Apartment.id
@@ -99,8 +96,6 @@ def send_payment_reminder():
             Tenant.id.in_(tenant_ids),
             Tenant.status == 'active'
         ).all()
-
-        logger.info(f"Found {len(tenants)} matching tenants")
 
         if not tenants:
             return jsonify({
@@ -115,11 +110,9 @@ def send_payment_reminder():
         for tenant in tenants:
             apartment = Apartment.query.get(tenant.apartment_id)
             property_info = Property.query.get(apartment.property_id)
-            house_name = f"{property_info.name} - Apt{apartment.apartment_number}"
+            house_name = f"{property_info.name} - {apartment.apartment_number}"
 
-            logger.info(f"Sending reminder to {tenant.name} at {tenant.phone}")
-
-            sms_result = sms_client.send_payment_reminder(
+            result = sms_client.send_payment_reminder(
                 tenant_name=tenant.name,
                 amount=float(tenant.monthly_rent),
                 house_name=house_name,
@@ -128,25 +121,18 @@ def send_payment_reminder():
                 tenant_id=tenant.id
             )
 
-            logger.info(f"SMS result for {tenant.name}: {sms_result}")
-
             results.append({
                 'tenant_id': tenant.id,
                 'tenant_name': tenant.name,
                 'phone': tenant.phone,
-                'status': 'sent' if sms_result.get('success') else 'failed',  
-                'error': sms_result.get('error'),
-                'details': sms_result.get('details')
+                'status':'sent' if result.get('status') == 'success' else 'failed',
+                'error': result.get('error'),
+                'details': result.get('details')
             })
 
         return jsonify({
             'message': 'Payment reminders sent',
             'results': results,
-            'summary': {
-                'total': len(results),
-                'sent': len([r for r in results if r['status'] == 'sent']),
-                'failed': len([r for r in results if r['status'] == 'failed'])
-            }
         }), 200
         
     except Exception as e:
@@ -155,7 +141,7 @@ def send_payment_reminder():
         logger.error(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
-@notifications_bp.route('/sms/overdue_notice',methods=['POST'])
+@notifications_bp.route('/sms/overdue-notice',methods=['POST'])
 @jwt_required()
 def send_overdue_notice():
     try:
@@ -202,7 +188,7 @@ def send_overdue_notice():
                     days_overdue  = (today - due_date).days
                     apartment = Apartment.query.get(tenant.apartment_id)
                     property_info = Property.query.get(apartment.property_id)
-                    house_name = f"{property_info.name} - Apt{apartment.apartment_number}"
+                    house_name = f"{property_info.name} - {apartment.apartment_number}"
 
                     result = sms_client.send_overdue_notice(
                         tenant_name = tenant.name,
@@ -225,7 +211,7 @@ def send_overdue_notice():
         logger.error(f"Overdue notice error:{str(e)}")
         return jsonify({'error':str(e)}), 500
     
-@notifications_bp.route('/sms/bulk-reminder', methods= ['POST'])
+@notifications_bp.route('/sms/bulk-reminder', methods=['POST'])
 @jwt_required()
 def send_bulk_reminder():
     try:
@@ -233,26 +219,28 @@ def send_bulk_reminder():
         user = User.query.get(user_id)
 
         if not user or user.role != 'landlord':
-            return jsonify({'message':'Unauthorized only landlords can send notifications'}),403
+            return jsonify({'message': 'Unauthorized only landlords can send notifications'}), 403
         
         data = request.get_json()
-        property_id  =  data.get('property_id=')
-        due_date = data.get('due_date',date(date.today().year,date.today().month,10).strftime('%Y-%m-%d'))
+        property_id = data.get('property_id')  
+        due_date = data.get('due_date', date(date.today().year, date.today().month, 10).strftime('%Y-%m-%d'))
 
-        #Get tenants
+        # Get tenants
+        tenants = []  
+        
         if property_id:
-            #verify ownership
+            # verify ownership
             property_info = Property.query.get(property_id)
             if not property_info or property_info.landlord_id != user.id:
-                return jsonify({'message':'You do not own this property'}),403
+                return jsonify({'message': 'You do not own this property'}), 403
             
             apartment_ids = [apartment.id for apartment in property_info.apartments]
             tenants = Tenant.query.filter(
                 Tenant.apartment_id.in_(apartment_ids),
                 Tenant.status == 'active'
-                ).all()
+            ).all()
         else:
-            #All landlords tenants
+            # All landlords tenants
             landlord_property_ids = [property.id for property in user.properties]
             tenants = db.session.query(Tenant).join(
                 Apartment, Tenant.apartment_id == Apartment.id
@@ -261,33 +249,39 @@ def send_bulk_reminder():
                 Tenant.status == 'active'
             ).all()
 
-            results = []
-            for tenant in tenants:
-                apartment = Apartment.query.get(tenant.apartment_id)
-                property_info = Property.query.get(apartment.property_id)
-                house_name = f"{property_info.name} - Apt{apartment.apartment_number}"
+        # Check if any tenants found
+        if not tenants:
+            return jsonify({'message': 'No active tenants found'}), 404
 
-                result = sms_client.send_payment_remainder(
-                    tenant_name = tenant.name,
-                    amount = float(tenant.rent_amount),
-                    house_name = house_name,
-                    due_date = due_date,
-                    phone_number = tenant.phone_number,
-                    tenant_id = tenant.id
-                )
-                results.append({
-                    'tenant_id': tenant.id,
-                    'phone_number': tenant.phone_number,
-                    'status':'sent' if result['success'] else 'failed',
-                    'error': result.get('error')
-                })
-            return jsonify({
-                'message':'Bulk payment reminders sent',
-                'results':results
-            }), 200
+        results = []
+        for tenant in tenants:
+            apartment = Apartment.query.get(tenant.apartment_id)
+            property_info = Property.query.get(apartment.property_id)
+            house_name = f"{property_info.name} - {apartment.apartment_number}"
+
+            result = sms_client.send_payment_reminder(
+                tenant_name=tenant.name,
+                amount=float(tenant.monthly_rent),
+                house_name=house_name,
+                due_date=due_date,
+                phone_number=tenant.phone,
+                tenant_id=tenant.id
+            )
+            results.append({
+                'tenant_id': tenant.id,
+                'phone_number': tenant.phone,
+                'status': 'sent' if result.get('success') else 'failed',
+                'error': result.get('error')
+            })
+        
+        return jsonify({
+            'message': 'Bulk payment reminders sent',
+            'results': results
+        }), 200
+        
     except Exception as e:
-        logger.error(f"Bulk reminder error:{str(e)}")
-        return jsonify({'error':str(e)}),500
+        logger.error(f"Bulk reminder error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 def send_payment_confirmation_sms(payment):
     """
@@ -375,7 +369,7 @@ def trigger_monthly_reminders():
         
         # Due date is 5th of current month
         today = date.today()
-        due_date = date(today.year, today.month, 10).strftime('%B 5, %Y')
+        due_date = date(today.year, today.month, 10).strftime('%B 10, %Y')
         
         sent_count = 0
         for tenant in tenants:
@@ -392,7 +386,7 @@ def trigger_monthly_reminders():
                 tenant_id=tenant.id
             )
             
-            if result['success']:
+            if result and result.get('status') == 'success':
                 sent_count += 1
         
         return jsonify({
