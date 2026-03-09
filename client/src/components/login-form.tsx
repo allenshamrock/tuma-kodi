@@ -2,23 +2,30 @@ import { useForm } from "@tanstack/react-form";
 import { LoginSchema } from "../lib/schema";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import { useAuth } from "../context/auth-context";
+import { useNavigate } from "react-router-dom";
 
-export const LoginForm = () => {
+const getErrorMessage = (error: unknown): string => {
+  if (typeof error === "string") return error;
+  if (typeof error === "object" && error !== null && "message" in error)
+    return (error as { message?: string }).message ?? "Invalid value";
+  return "Invalid value";
+};
+
+export const LoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    validators: {
-      onSubmit: LoginSchema,
-    },
+    defaultValues: { email: "", password: "" },
+    validators: { onSubmit: LoginSchema },
     onSubmit: async ({ value }) => {
       try {
-        const validatedData = LoginSchema.parse(value);
-        console.log("Validated Data:", validatedData);
-        toast.success("Login Successful");
+        await login(value.email, value.password);
+        toast.success("Login successful");
+        onSuccess?.();
+        navigate("/dashboard");
       } catch (error) {
-        toast.error("Something went wrong. Please try again.");
+        toast.error(error instanceof Error ? error.message : "Login failed.Check ");
       }
     },
   });
@@ -32,16 +39,10 @@ export const LoginForm = () => {
       }}
       className="flex flex-col gap-4"
     >
-      {/* Email Field */}
       <form.Field name="email">
         {(field) => (
           <div className="flex flex-col gap-1">
-            <label
-              htmlFor={field.name}
-              className="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Email
-            </label>
+            <label htmlFor={field.name}>Email</label>
             <input
               id={field.name}
               type="email"
@@ -49,31 +50,22 @@ export const LoginForm = () => {
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
               placeholder="you@example.com"
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm"
             />
             {field.state.meta.isTouched &&
               field.state.meta.errors.length > 0 && (
                 <span className="text-xs text-red-500">
-                  {typeof field.state.meta.errors[0] === "string"
-                    ? field.state.meta.errors[0]
-                    : ((field.state.meta.errors[0] as { message?: string })
-                        ?.message ?? "Invalid value")}
+                  {getErrorMessage(field.state.meta.errors[0])}
                 </span>
               )}
           </div>
         )}
       </form.Field>
 
-      {/* Password Field */}
       <form.Field name="password">
         {(field) => (
           <div className="flex flex-col gap-1">
-            <label
-              htmlFor={field.name}
-              className="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Password
-            </label>
+            <label htmlFor={field.name}>Password</label>
             <input
               id={field.name}
               type="password"
@@ -81,22 +73,18 @@ export const LoginForm = () => {
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
               placeholder="••••••••"
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm"
             />
             {field.state.meta.isTouched &&
               field.state.meta.errors.length > 0 && (
                 <span className="text-xs text-red-500">
-                  {typeof field.state.meta.errors[0] === "string"
-                    ? field.state.meta.errors[0]
-                    : ((field.state.meta.errors[0] as { message?: string })
-                        ?.message ?? "Invalid value")}
+                  {getErrorMessage(field.state.meta.errors[0])}
                 </span>
               )}
           </div>
         )}
       </form.Field>
 
-      {/* Submit */}
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
       >

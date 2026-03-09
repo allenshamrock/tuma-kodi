@@ -1,5 +1,8 @@
 import { HousePlus, Plus, House, CircleArrowRight } from "lucide-react";
+import AddPropertyForm from "../components/add-property-form";
+import { useState } from "react";
 const Dashboard = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
@@ -14,7 +17,10 @@ const Dashboard = () => {
           building or complex where you manage rental units.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <button className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-white hover:bg-primary-hover transition">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-white hover:bg-primary-hover transition"
+          >
             <Plus className="h-4 w-4" />
             Add Property Your First Property
           </button>
@@ -68,6 +74,21 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+        >
+          <div className="relative max-w-lg w-full p-4 px-6 mx-4 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200">
+            <AddPropertyForm
+              onSuccess={() => setIsModalOpen(false)}
+              onCancel={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

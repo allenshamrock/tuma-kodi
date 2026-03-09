@@ -8,6 +8,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { Button } from "./ui/button";
+import { useAuth } from "../context/auth-context";
 export const MainNav = [
   { title: "Dashboard", path: "/", icon: LayoutDashboard },
   { title: "Properties", path: "/properties", icon: Building2 },
@@ -15,13 +17,13 @@ export const MainNav = [
   { title: "Payments", path: "/payments", icon: CreditCard },
   { title: "Reports", path: "/reports", icon: BarChart3 },
 ];
-export const BottomNav=[
-    { title: "Settings", path: "/settings", icon: Settings },
-]
-
+export const BottomNav = [
+  { title: "Settings", path: "/settings", icon: Settings },
+];
 
 export const DesignSystemAside = () => {
   const location = useLocation();
+  const { logout } = useAuth();
 
   const renderNavItem = (item: any) => {
     const Icon = item.icon;
@@ -55,13 +57,13 @@ export const DesignSystemAside = () => {
       <div className="mt-auto mb-6 flex flex-col gap-1">
         {BottomNav.map(renderNavItem)}
 
-        <Link
-          to="/logout"
-          className="flex items-center gap-3 py-2 px-4 text-gray-400 hover:bg-red-600 hover:text-white rounded-lg transition-colors duration-200"
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 py-2 px-4  text-gray-400 hover:bg-red-600 hover:text-white rounded-lg transition-colors duration-200"
         >
           <LogOut size={18} />
           <span>Logout</span>
-        </Link>
+        </button>
       </div>
     </div>
   );

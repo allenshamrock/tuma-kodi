@@ -2,6 +2,8 @@ import { useForm } from "@tanstack/react-form";
 import { RegisterSchema } from "../lib/schema";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import { useAuth } from "../context/auth-context";
+import { useNavigate } from "react-router-dom";
 
 const getErrorMessage = (error: unknown): string => {
   if (typeof error === "string") return error;
@@ -12,6 +14,9 @@ const getErrorMessage = (error: unknown): string => {
 };
 
 export const RegisterForm = () => {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
   const form = useForm({
     defaultValues: {
       firstName: "",
@@ -23,10 +28,14 @@ export const RegisterForm = () => {
       onSubmit: RegisterSchema,
     },
     onSubmit: async ({ value }) => {
+
       try {
         const validatedData = RegisterSchema.parse(value);
         console.log("Validated Data:", validatedData);
         toast.success("Account created successfully!");
+        await register(validatedData);
+        navigate("/dashboard");
+         
       } catch (error) {
         toast.error("Something went wrong. Please try again.");
       }

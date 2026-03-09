@@ -4,10 +4,13 @@ import { ProtectedRoute } from "./components/protected-route";
 import { DesignSystemLayout } from "./components/design-system-layout";
 import AuthPage from "./pages/auth";
 import Dashboard from "./pages/Dashboard";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <div className="App overflow-x-hidden">
+      <Toaster richColors position="top-right" />
+
       <BrowserRouter>
         <AuthProvider>
           <Routes>
