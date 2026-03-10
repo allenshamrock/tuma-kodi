@@ -5,6 +5,8 @@ import { DesignSystemLayout } from "./components/design-system-layout";
 import AuthPage from "./pages/auth";
 import Dashboard from "./pages/Dashboard";
 import { Toaster } from "sonner";
+import Properties from "./pages/properties";
+import PropertyDetail from "./pages/property-details"
 
 function App() {
   return (
@@ -22,7 +24,8 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<DesignSystemLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/properties" element={<div>Properties</div>} />
+                <Route path="/properties" element={<Properties />} />
+                <Route path="/properties/:id" element={<PropertyDetail />} />
                 <Route path="/tenants" element={<div>Tenants</div>} />
                 <Route path="/payments" element={<div>Payments</div>} />
                 <Route path="/reports" element={<div>Reports</div>} />

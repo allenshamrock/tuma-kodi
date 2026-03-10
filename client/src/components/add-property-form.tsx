@@ -12,7 +12,7 @@ const AddPropertySchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   total_units: z
-    .number({ invalid_type_error: "Must be a number" })
+    .number({ error: "Must be a number" })
     .min(1, "At least 1 unit required")
     .max(9999, "Too many units"),
 });

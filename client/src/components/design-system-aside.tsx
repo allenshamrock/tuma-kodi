@@ -8,10 +8,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "./ui/button";
 import { useAuth } from "../context/auth-context";
 export const MainNav = [
-  { title: "Dashboard", path: "/", icon: LayoutDashboard },
+  { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Properties", path: "/properties", icon: Building2 },
   { title: "Tenants", path: "/tenants", icon: Users },
   { title: "Payments", path: "/payments", icon: CreditCard },
@@ -49,7 +48,7 @@ export const DesignSystemAside = () => {
   return (
     <div className="bg-primary h-screen w-[240px] flex flex-col">
       <div className="my-6 px-4">
-        <img src="" alt="Tuma kodi" />
+        {/* <img src="" alt="Tuma kodi" /> */}
       </div>
 
       <div className="flex flex-col gap-1">{MainNav.map(renderNavItem)}</div>
