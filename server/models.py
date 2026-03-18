@@ -127,12 +127,13 @@ class Tenant(db.Model):
     # Relationships
     payments = db.relationship('Payment', back_populates="tenant", cascade="all, delete-orphan")
     invoices = db.relationship('Invoice', backref='tenant', lazy=True)
-
     def to_dict(self):  
         return {
             'id': self.id,
             'user_id': self.user_id,
             'apartment_id': self.apartment_id,
+            'apartment_number': self.apartment.apartment_number if self.apartment else None,
+            'property_name': self.apartment.property.name if self.apartment and self.apartment.property else None,
             'lease_start_date': self.lease_start_date.isoformat(),
             'lease_end_date': self.lease_end_date.isoformat() if self.lease_end_date else None,
             'monthly_rent': str(self.monthly_rent),

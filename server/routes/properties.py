@@ -146,7 +146,7 @@ def create_unit(property_id):
 @jwt_required()
 def get_units(property_id):
     try:
-        landlord_id = get_jwt_identity()  # Get landlord ID from JWT token
+        landlord_id = int(get_jwt_identity())
         property = Property.query.filter_by(id=property_id, landlord_id=landlord_id).first()
         if not property:
             return jsonify({'error': 'Property not found'}), 404
@@ -154,18 +154,49 @@ def get_units(property_id):
         units = []
         for unit in property.apartments:
             unit_dict = unit.to_dict()
-            if unit.tenant:
-                unit_dict['tenant'] = unit.tenant.to_dict()
+            if unit.tenant and unit.tenant.status == 'active':
+                t = unit.tenant
+                name_parts = t.name.strip().split(' ', 1)
+                unit_dict['tenant'] = {
+                    'id': t.id,
+                    'first_name': name_parts[0],
+                    'last_name': name_parts[1] if len(name_parts) > 1 else '',
+                    'email': t.email,
+                    'phone': t.phone,
+                }
             else:
-                unit_dict['tenant'] = None  
+                unit_dict['tenant'] = None
             units.append(unit_dict)
 
-       
+        # ↑ return must be at this indentation level, outside the for loop
         return jsonify({
             'property': property.to_dict(),
             'units': units
         }), 200
 
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@properties_bp.route('/properties/<int:property_id>/vacant-units', methods=['GET'])
+@jwt_required()
+def get_vacant_units(property_id):
+    try:
+        landlord_id = int(get_jwt_identity())
+        property = Property.query.filter_by(id=property_id, landlord_id=landlord_id).first()
+        if not property:
+            return jsonify({'error': 'Property not found'}), 404
+
+        vacant_units = Apartment.query.filter_by(
+            property_id=property_id,
+            status='vacant'
+        ).all()
+
+        return jsonify({
+            'units': [
+                {'id': u.id, 'apartment_number': u.apartment_number, 'rent_amount': str(u.rent_amount)}
+                for u in vacant_units
+            ]
+        }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

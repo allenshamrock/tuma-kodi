@@ -7,7 +7,6 @@ import { usePropertyDetail } from "./use-property-detail";
 import { buildColumns } from "./unit-columns";
 import { PropertyHeader } from "./property-header";
 import { PropertyStats } from "./property-stats";
-// import { UnitsTableSkeleton } from "./units-table-skeleton";
 import { UnitModal } from "./unit-modal";
 import type { ModalState } from "./types";
 import { UnitsEmptyState } from "./units-empty-states";
