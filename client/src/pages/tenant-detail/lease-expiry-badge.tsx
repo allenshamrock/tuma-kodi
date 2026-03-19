@@ -22,7 +22,7 @@ export const LeaseExpiryBadge = ({
 
   if (leaseExpiringSoon) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 dark:bg-primary-500/10 border border-primary-200 dark:border-primary-500/20 px-3 py-1 text-xs font-medium text-primary-700 dark:text-primary-400">
         <Clock className="h-3.5 w-3.5" />
         Expires in {daysUntilExpiry} day{daysUntilExpiry !== 1 ? "s" : ""}
       </span>

@@ -12,7 +12,7 @@ const statusStyles: Record<string, string> = {
   completed:
     "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400",
   pending:
-    "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
+    "bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400",
   failed: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
 };
 

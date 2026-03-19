@@ -9,6 +9,9 @@ import Properties from "./pages/properties";
 import PropertyDetail from "./pages/property-details"
 import Tenants from "./pages/tenants";
 import TenantDetail from "./pages/tenant-detail";
+import Payments from "./pages/payments";
+import Reports from "./pages/reports";
+import Settings from "./pages/settings";
 
 function App() {
   return (
@@ -30,8 +33,9 @@ function App() {
                 <Route path="/properties/:id" element={<PropertyDetail />} />
                 <Route path="/tenants" element={<Tenants/>} />
                 <Route path = "/tenants/:id" element={<TenantDetail/>}/>
-                <Route path="/payments" element={<div>Payments</div>} />
-                <Route path="/reports" element={<div>Reports</div>} />
+                <Route path="/payments" element={<Payments/>} />
+                <Route path="/reports" element={<Reports/>} />
+                <Route path="/settings" element={<Settings/>}/>
               </Route>
             </Route>
           </Routes>

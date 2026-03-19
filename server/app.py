@@ -8,6 +8,7 @@ from routes.tenant import tenant_bp
 from routes.payment import payments_bp
 from routes.invoices import invoices_bp
 from routes.notifications import notifications_bp
+from routes.reports import reports_bp
 
 # Register blueprint
 app.register_blueprint(auth_bp, url_prefix='/api')
@@ -17,6 +18,7 @@ app.register_blueprint(tenant_bp, url_prefix='/api/')
 app.register_blueprint(payments_bp, url_prefix='/api/payments')
 app.register_blueprint(invoices_bp, url_prefix='/api/invoices') 
 app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+app.register_blueprint(reports_bp, url_prefix='/api/reports')
 
 @app.route('/')
 def home():

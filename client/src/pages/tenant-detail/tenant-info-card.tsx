@@ -112,9 +112,9 @@ export const TenantInfoCard = ({ tenant, summary }: TenantInfoCardProps) => (
 
         {/* Expiry warning */}
         {summary.lease_expiring_soon && summary.days_until_expiry !== null && (
-          <div className="flex items-center gap-2 mt-1 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-            <span className="text-xs text-amber-700 dark:text-amber-400">
+          <div className="flex items-center gap-2 mt-1 rounded-lg bg-primary-50 dark:bg-primary-500/10 border border-primary-200 dark:border-primary-500/20 px-3 py-2">
+            <AlertTriangle className="h-4 w-4 text-primary-500 shrink-0" />
+            <span className="text-xs text-primary-700 dark:text-primary-400">
               Lease expires in {summary.days_until_expiry} day
               {summary.days_until_expiry !== 1 ? "s" : ""}
             </span>

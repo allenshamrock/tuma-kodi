@@ -203,6 +203,8 @@ def refresh_token():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+
 
 #Logout route
 @auth_bp.route('/logout', methods=['POST'])

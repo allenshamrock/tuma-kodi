@@ -40,19 +40,19 @@ def send_custom_sms():
             apartment = Apartment.query.get(tenant.apartment_id)
             if apartment and apartment.property_id in landlord_property_ids:
                 result = sms_client.send_custom_message(
-                    tenant.phone_number,
+                    tenant.phone,
                     message
                 )
                 results.append({
                     'tenant_id': tenant.id,
-                    'phone_number': tenant.phone_number,
+                    'phone_number': tenant.phone,
                     'status':'sent' if result['success'] else 'failed',
                     'error': result.get('error')
                 })
             else:
                 results.append({
                     'tenant_id': tenant.id,
-                    'phone_number': tenant.phone_number,
+                    'phone_number': tenant.phone,
                     'status':'failed',
                     'error':'Tenant does not belong to your property'
                 })
