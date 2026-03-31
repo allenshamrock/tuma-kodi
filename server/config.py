@@ -43,6 +43,17 @@ migrate = Migrate(app, db)
 db.init_app(app)
 api = Api(app)
 jwt = JWTManager(app)
+allowed_origins = [
+    "http://localhost:5173",
+    "https://tuma-kodi.vercel.app", 
+]
+
 CORS(app,
-      origins=["http://localhost:5173","https://tuma-kodi.vercel.app/"],
-       supports_credentials=True)
+     resources={
+         r"/api/*": {
+             "origins": allowed_origins,
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": True,
+         }
+     })
