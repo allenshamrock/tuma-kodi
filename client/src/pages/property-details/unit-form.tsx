@@ -5,7 +5,9 @@ import { Hash, Edit2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Unit } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
+
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const UnitSchema = z.object({
   apartment_number: z.string().min(1, "Unit number is required"),

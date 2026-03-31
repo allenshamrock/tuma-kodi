@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Property } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const useProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);

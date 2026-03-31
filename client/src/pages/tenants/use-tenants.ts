@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Tenant } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const useTenants = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
