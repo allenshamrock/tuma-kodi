@@ -44,5 +44,5 @@ db.init_app(app)
 api = Api(app)
 jwt = JWTManager(app)
 CORS(app,
-      origins=["http://localhost:5173"],
+      origins=["http://localhost:5173","https://tuma-kodi.vercel.app/"],
        supports_credentials=True)
