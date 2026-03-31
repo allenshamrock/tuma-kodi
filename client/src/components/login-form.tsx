@@ -17,7 +17,7 @@ export const LoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const navigate = useNavigate();
   const form = useForm({
     defaultValues: { email: "", password: "" },
-    validators: { onSubmit: LoginSchema },
+    validators: { onSubmit: LoginSchema as any },
     onSubmit: async ({ value }) => {
       try {
         await login(value.email, value.password);

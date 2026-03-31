@@ -9,13 +9,21 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
 
 export const UnitSchema = z.object({
   apartment_number: z.string().min(1, "Unit number is required"),
-  apartment_type: z.string().optional(),
+  apartment_type: z.string().optional().or(z.literal("")),
   rent_amount: z
-    .number({ error: "Must be a number" })
+    .number({ invalid_type_error: "Must be a number" })
     .min(1, "Rent amount is required"),
-  deposit_amount: z.number().min(0).optional(),
-  size_sqft: z.number().min(1).optional(),
-  features: z.string().optional(),
+  deposit_amount: z
+    .number()
+    .min(0)
+    .optional()
+    .or(z.literal("") as any),
+  size_sqft: z
+    .number()
+    .min(1)
+    .optional()
+    .or(z.literal("") as any),
+  features: z.string().optional().or(z.literal("")),
 });
 
 type UnitFormData = z.infer<typeof UnitSchema>;
@@ -51,7 +59,7 @@ export const UnitForm = ({
       size_sqft: unit?.size_sqft ?? ("" as unknown as number),
       features: unit?.features ?? "",
     },
-    validators: { onSubmit: UnitSchema },
+    validators: { onSubmit: UnitSchema as any },
     onSubmit: async ({ value }) => {
       try {
         const token = localStorage.getItem("access_token");

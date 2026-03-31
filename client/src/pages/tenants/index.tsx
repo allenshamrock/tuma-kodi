@@ -1,25 +1,24 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { DataTable } from "@/components/ui/data-table";
-
+import type { ModalState } from "./types";
 import { useTenants } from "./use-tenants";
 import { buildColumns } from "./tenant-columns";
-import { TenantModal } from "./tenant-modal";
-import type { ModalState } from "./types";
 import { TenantsSkeleton } from "./tenant-skeleton";
 import { TenantsEmptyState } from "./tenant-emtpy-state";
-import { useNavigate } from "react-router-dom";
+import { TenantModal } from "./tenant-modal";
+
 
 const Tenants = () => {
-    const navigate = useNavigate()
+  const navigate = useNavigate();
   const [modal, setModal] = useState<ModalState>(null);
   const { tenants, loading, error, deleteLoading, fetchTenants, handleDelete } =
     useTenants();
-  const columns = buildColumns(setModal);
+  const columns = buildColumns(setModal as (state: ModalState) => void);
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -48,25 +47,15 @@ const Tenants = () => {
       {loading && <TenantsSkeleton />}
 
       {!loading && !error && tenants.length === 0 && (
-        <TenantsEmptyState setModal={setModal} />
+        <TenantsEmptyState setModal={setModal as (s: ModalState) => void} />
       )}
 
       {!loading && !error && tenants.length > 0 && (
-        <DataTable columns={columns} data={tenants} onRowClick={(row)=> 
-            navigate(`/tenants/${row.id}`,{
-                state:{tenantName: row.name}
-            })
-        }  />
-    //             <DataTable
-    //       columns={columns}
-    //       data={properties}
-    //       onRowClick={(row) =>
-    //         navigate(`/properties/${row.id}`, {
-    //           state: { propertyName: row.name },
-    //         })
-    //       }
-    //     />
-    //   )}
+        <DataTable
+          columns={columns}
+          data={tenants}
+          onRowClick={(row) => navigate(`/tenants/${row.id}`)}
+        />
       )}
 
       <TenantModal

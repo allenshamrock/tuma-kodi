@@ -4,7 +4,6 @@ import {
   Clock,
   AlertTriangle,
   MessageSquare,
-  Users,
   Send,
   CheckSquare,
   Square,

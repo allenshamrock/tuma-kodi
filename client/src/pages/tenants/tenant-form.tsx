@@ -13,12 +13,12 @@ const TenantSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email"),
   phone: z.string().min(1, "Phone is required"),
   apartment_id: z
-    .number({ error: "Please select a unit" })
+    .number({ invalid_type_error: "Please select a unit" })
     .min(1, "Unit is required"),
   lease_start_date: z.string().min(1, "Lease start date is required"),
   lease_end_date: z.string().optional(),
   monthly_rent: z
-    .number({ error: "Must be a number" })
+    .number({ invalid_type_error: "Must be a number" })
     .min(1, "Monthly rent is required"),
   security_deposit_paid: z.number().min(0).optional(),
   id_number: z.string().optional(),
@@ -99,8 +99,10 @@ export const TenantForm = ({
       email: tenant?.email ?? "",
       phone: tenant?.phone ?? "",
       apartment_id: tenant?.apartment_id ?? ("" as unknown as number),
-      lease_start_date: tenant?.lease_start_date?.slice(0, 10) ?? "",
-      lease_end_date: tenant?.lease_end_date?.slice(0, 10) ?? "",
+      lease_start_date: (tenant?.lease_start_date ?? "")
+        .toString()
+        .slice(0, 10),
+      lease_end_date: (tenant?.lease_end_date ?? "").toString().slice(0, 10),
       monthly_rent: tenant?.monthly_rent
         ? parseFloat(tenant.monthly_rent)
         : ("" as unknown as number),
@@ -110,7 +112,7 @@ export const TenantForm = ({
       id_number: tenant?.id_number ?? "",
       emergency_contact: tenant?.emergency_contact ?? "",
     },
-    validators: { onSubmit: TenantSchema },
+    validators: { onSubmit: TenantSchema as any },
     onSubmit: async ({ value }) => {
       try {
         const token = localStorage.getItem("access_token");

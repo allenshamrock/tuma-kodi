@@ -17,8 +17,8 @@ export const TenantDeleteConfirm = ({
   const asUnit = {
     id: tenant.id,
     apartment_number: tenant.name,
-    rent_amount: tenant.monthly_rent,
-    deposit_amount: tenant.security_deposit_paid,
+    rent_amount: parseFloat(tenant.monthly_rent),
+    deposit_amount: parseFloat(tenant.security_deposit_paid),
     status: "occupied" as const,
     tenant: null,
   };

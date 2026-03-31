@@ -15,7 +15,7 @@ const EditPropertySchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   total_units: z
-    .number({ error: "Must be a number" })
+    .number({ invalid_type_error: "Must be a number" })
     .min(1, "At least 1 unit required"),
 });
 
@@ -44,7 +44,7 @@ export const EditPropertyForm = ({
       city: property.city,
       total_units: property.total_units,
     },
-    validators: { onSubmit: EditPropertySchema },
+    validators: { onSubmit: EditPropertySchema as any },
     onSubmit: async ({ value }) => {
       try {
         const token = localStorage.getItem("access_token");

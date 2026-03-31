@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react";
+import {  X } from "lucide-react";
 import type { FilterState, PropertyPaymentGroup } from "./types";
 
 interface PaymentFiltersProps {

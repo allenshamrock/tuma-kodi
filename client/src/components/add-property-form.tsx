@@ -12,7 +12,7 @@ const AddPropertySchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   total_units: z
-    .number({ error: "Must be a number" })
+    .number({ invalid_type_error: "Must be a number" })
     .min(1, "At least 1 unit required")
     .max(9999, "Too many units"),
 });
@@ -22,7 +22,7 @@ type AddPropertyFormData = z.infer<typeof AddPropertySchema>;
 const getErrorMessage = (error: unknown): string => {
   if (typeof error === "string") return error;
   if (typeof error === "object" && error !== null && "message" in error)
-    return (error as { message?: string }).message ?? "Invalid value";
+ return (error as { message?: string }).message ?? "Invalid value";
   return "Invalid value";
 };
 
@@ -39,7 +39,7 @@ const AddProperty = ({ onSuccess, onCancel }: AddPropertyProps) => {
       city: "",
       total_units: "" as unknown as number,
     },
-    validators: { onSubmit: AddPropertySchema },
+    validators: { onSubmit: AddPropertySchema as any },
     onSubmit: async ({ value }) => {
       try {
         const API_BASE =

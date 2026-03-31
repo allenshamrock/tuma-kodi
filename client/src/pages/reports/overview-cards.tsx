@@ -1,5 +1,4 @@
 import {
-  Building2,
   Home,
   Users,
   TrendingUp,

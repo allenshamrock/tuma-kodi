@@ -37,7 +37,7 @@ export const ProfileTab = () => {
 
   const profileForm = useForm({
     defaultValues: { first_name: "", last_name: "", phone: "" },
-    validators: { onSubmit: ProfileSchema },
+    validators: { onSubmit: ProfileSchema as any },
     onSubmit: async ({ value }) => {
       await updateProfile(value);
     },
@@ -57,7 +57,7 @@ export const ProfileTab = () => {
       new_password: "",
       confirm_password: "",
     },
-    validators: { onSubmit: PasswordSchema },
+    validators: { onSubmit: PasswordSchema as any },
     onSubmit: async ({ value }) => {
       const ok = await updateProfile({
         current_password: value.current_password,
