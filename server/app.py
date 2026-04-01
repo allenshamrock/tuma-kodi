@@ -32,6 +32,10 @@ def home():
         }
     }
 
+@app.route('/api/health', methods=['GET'])
+def health():
+    return {'status': 'ok'}, 200
+
 if __name__ == '__main__':
     with app.app_context():
         # Create tables
